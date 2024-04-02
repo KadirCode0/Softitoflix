@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -23,24 +24,16 @@ namespace Softitoflix.Controllers
 
         // GET: api/Plans
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Plan>>> GetPlans()
+        public ActionResult<List<Plan>> GetPlans()
         {
-          if (_context.Plans == null)
-          {
-              return NotFound();
-          }
-            return await _context.Plans.ToListAsync();
+            return _context.Plans.AsNoTracking().ToList();
         }
 
         // GET: api/Plans/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Plan>> GetPlan(short id)
+        public ActionResult<Plan> GetPlan(short id)
         {
-          if (_context.Plans == null)
-          {
-              return NotFound();
-          }
-            var plan = await _context.Plans.FindAsync(id);
+            Plan? plan = _context.Plans.Find(id);
 
             if (plan == null)
             {
@@ -53,72 +46,46 @@ namespace Softitoflix.Controllers
         // PUT: api/Plans/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutPlan(short id, Plan plan)
+        [Authorize(Roles = "ContentAdmin")]
+        public ActionResult PutPlan(short id, Plan plan)
         {
             if (id != plan.Id)
             {
                 return BadRequest();
             }
-
-            _context.Entry(plan).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!PlanExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
+            
+            _context.Plans.Update(plan);
+            _context.SaveChanges();
             return NoContent();
         }
 
         // POST: api/Plans
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Plan>> PostPlan(Plan plan)
+        [Authorize(Roles = "ContentAdmin")]
+        public int PostPlan(Plan plan)
         {
-          if (_context.Plans == null)
-          {
-              return Problem("Entity set 'SoftitoflixContext.Plans'  is null.");
-          }
             _context.Plans.Add(plan);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            return CreatedAtAction("GetPlan", new { id = plan.Id }, plan);
+            return plan.Id;
         }
 
         // DELETE: api/Plans/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeletePlan(short id)
+        [Authorize(Roles = "ContentAdmin")]
+        public ActionResult DeletePlan(short id)
         {
-            if (_context.Plans == null)
-            {
-                return NotFound();
-            }
-            var plan = await _context.Plans.FindAsync(id);
+            Plan? plan = _context.Plans.Find(id);
             if (plan == null)
             {
                 return NotFound();
-            }
-
+            }            
             _context.Plans.Remove(plan);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return NoContent();
         }
 
-        private bool PlanExists(short id)
-        {
-            return (_context.Plans?.Any(e => e.Id == id)).GetValueOrDefault();
-        }
     }
 }

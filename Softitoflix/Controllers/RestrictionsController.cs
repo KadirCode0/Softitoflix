@@ -24,7 +24,7 @@ namespace Softitoflix.Controllers
 
         // GET: api/Restrictions
         [HttpGet]
-        
+        [Authorize]
         public ActionResult<List<Restriction>> GetRestriction()
         {
             return _context.Restrictions.ToList();
@@ -32,6 +32,7 @@ namespace Softitoflix.Controllers
 
         // GET: api/Restrictions/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<Restriction> GetRestriction(byte id)
         {
             Restriction? restriction = _context.Restrictions.Find(id);
