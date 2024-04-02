@@ -49,7 +49,7 @@ namespace Softitoflix.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "ContentAdmin")]
-        public ActionResult PutRestriction(byte id, Restriction restriction)
+        public ActionResult PutRestriction(Restriction restriction)
         {
             _context.Restrictions.Update(restriction);
             _context.SaveChanges();
