@@ -2,13 +2,14 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Softitoflix.Data;
 using Softitoflix.Models;
 
-namespace Softitoflix.Controllers
+namespace SoftITOFlix.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,25 +24,23 @@ namespace Softitoflix.Controllers
 
         // GET: api/Media
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<Media>>> GetMedias()
+        [Authorize]
+        public ActionResult<List<Media>> GetMedias(bool includePassive = true)
         {
-          if (_context.Medias == null)
-          {
-              return NotFound();
-          }
-            return await _context.Medias.ToListAsync();
+            IQueryable<Media> media = _context.Medias;
+            if (includePassive == false)
+            {
+                media = media.Where(m => m.isPassive == false);
+            }
+            return media.AsNoTracking().ToList();
         }
 
         // GET: api/Media/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<Media>> GetMedia(int id)
+        [Authorize]
+        public ActionResult<Media> GetMedia(int id)
         {
-          if (_context.Medias == null)
-          {
-              return NotFound();
-          }
-            var media = await _context.Medias.FindAsync(id);
-
+            Media? media = _context.Medias.Find(id);
             if (media == null)
             {
                 return NotFound();
@@ -53,72 +52,40 @@ namespace Softitoflix.Controllers
         // PUT: api/Media/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public async Task<IActionResult> PutMedia(int id, Media media)
+        [Authorize(Roles = "ContentAdmin")]
+        public void PutMedia(Media media)
         {
-            if (id != media.Id)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(media).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MediaExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            _context.Medias.Update(media);
+            _context.SaveChanges();
         }
 
         // POST: api/Media
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<Media>> PostMedia(Media media)
+        [Authorize(Roles = "ContentAdmin")]
+        public int PostMedia(Media media)
         {
-          if (_context.Medias == null)
-          {
-              return Problem("Entity set 'SoftitoflixContext.Medias'  is null.");
-          }
             _context.Medias.Add(media);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
-            return CreatedAtAction("GetMedia", new { id = media.Id }, media);
+            return media.Id;
         }
 
         // DELETE: api/Media/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMedia(int id)
+        [Authorize(Roles = "ContentAdmin")]
+        public string DeleteMedia(int id)
         {
-            if (_context.Medias == null)
-            {
-                return NotFound();
-            }
-            var media = await _context.Medias.FindAsync(id);
+            Media? media = _context.Medias.Find(id);
             if (media == null)
             {
-                return NotFound();
+                return "Null";
             }
 
-            _context.Medias.Remove(media);
-            await _context.SaveChangesAsync();
+            media.isPassive = false;
+            _context.SaveChanges();
 
-            return NoContent();
-        }
-
-        private bool MediaExists(int id)
-        {
-            return (_context.Medias?.Any(e => e.Id == id)).GetValueOrDefault();
+            return "Deleted";
         }
     }
 }

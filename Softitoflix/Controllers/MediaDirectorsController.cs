@@ -2,13 +2,15 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Softitoflix.Data;
 using Softitoflix.Models;
 
-namespace Softitoflix.Controllers
+
+namespace SoftITOFlix.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -23,116 +25,55 @@ namespace Softitoflix.Controllers
 
         // GET: api/MediaDirectors
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<MediaDirector>>> GetMediaDirectors()
+        public ActionResult<List<MediaDirector>> GetMediaDirectors()
         {
-          if (_context.MediaDirectors == null)
-          {
-              return NotFound();
-          }
-            return await _context.MediaDirectors.ToListAsync();
+            return _context.MediaDirectors.AsNoTracking().ToList();
         }
 
         // GET: api/MediaDirectors/5
         [HttpGet("{id}")]
-        public async Task<ActionResult<MediaDirector>> GetMediaDirector(int id)
+        public ActionResult<MediaDirector> GetMediaDirector(int mediaId)
         {
-          if (_context.MediaDirectors == null)
-          {
-              return NotFound();
-          }
-            var mediaDirector = await _context.MediaDirectors.FindAsync(id);
 
-            if (mediaDirector == null)
-            {
-                return NotFound();
-            }
-
-            return mediaDirector;
-        }
-
-        // PUT: api/MediaDirectors/5
-        // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
-        [HttpPut("{id}")]
-        public async Task<IActionResult> PutMediaDirector(int id, MediaDirector mediaDirector)
-        {
-            if (id != mediaDirector.MediaId)
-            {
-                return BadRequest();
-            }
-
-            _context.Entry(mediaDirector).State = EntityState.Modified;
-
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                if (!MediaDirectorExists(id))
-                {
-                    return NotFound();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return NoContent();
+            MediaDirector? mediaDirector = _context.MediaDirectors.Where(m => m.MediaId == mediaId).FirstOrDefault();
+            return Ok(mediaDirector);
         }
 
         // POST: api/MediaDirectors
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public async Task<ActionResult<MediaDirector>> PostMediaDirector(MediaDirector mediaDirector)
+        [Authorize(Roles = "ContentAdmin")]
+        public bool PostMediaDirector(string mediaName, int directorId)
         {
-          if (_context.MediaDirectors == null)
-          {
-              return Problem("Entity set 'SoftitoflixContext.MediaDirectors'  is null.");
-          }
+            MediaDirector? mediaDirector = new MediaDirector();
+            Media? media = _context.Medias.Where(m => m.Name == mediaName).FirstOrDefault();
+            if (media == null)
+            {
+                return false;
+            }
+            mediaDirector.MediaId = media.Id;
+            mediaDirector.DirectorId = directorId;
             _context.MediaDirectors.Add(mediaDirector);
-            try
-            {
-                await _context.SaveChangesAsync();
-            }
-            catch (DbUpdateException)
-            {
-                if (MediaDirectorExists(mediaDirector.MediaId))
-                {
-                    return Conflict();
-                }
-                else
-                {
-                    throw;
-                }
-            }
-
-            return CreatedAtAction("GetMediaDirector", new { id = mediaDirector.MediaId }, mediaDirector);
+            _context.SaveChanges();
+            return true;
         }
 
         // DELETE: api/MediaDirectors/5
         [HttpDelete("{id}")]
-        public async Task<IActionResult> DeleteMediaDirector(int id)
+        [Authorize(Roles = "ContentAdmin")]
+        public ActionResult DeleteMediaDirector(int mediaId, int directorId)
         {
-            if (_context.MediaDirectors == null)
-            {
-                return NotFound();
-            }
-            var mediaDirector = await _context.MediaDirectors.FindAsync(id);
-            if (mediaDirector == null)
+
+            MediaDirector? mediaDirector = _context.MediaDirectors.Where(m => m.MediaId == mediaId).FirstOrDefault();
+            if (mediaDirector == null || directorId != mediaDirector.DirectorId)
             {
                 return NotFound();
             }
 
             _context.MediaDirectors.Remove(mediaDirector);
-            await _context.SaveChangesAsync();
+            _context.SaveChanges();
 
             return NoContent();
-        }
-
-        private bool MediaDirectorExists(int id)
-        {
-            return (_context.MediaDirectors?.Any(e => e.MediaId == id)).GetValueOrDefault();
         }
     }
 }
