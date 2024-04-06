@@ -7,9 +7,8 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Softitoflix.Data;
 using Softitoflix.Models;
-using Softitoflix.Data;
-using Softitoflix.Models;
 using Microsoft.AspNetCore.Authorization;
+using System.IO;
 
 namespace Softitoflix.Controllers
 {
@@ -50,18 +49,12 @@ namespace Softitoflix.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "ContentAdmin")]
-        public void PutCategory(Category category)
+        public ActionResult PutCategory(Category category)
         {
+
             _context.Categories.Update(category);
-
-            try
-            {
-                _context.SaveChanges();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-
-            }
+            _context.SaveChanges();
+            return Ok();
         }
 
         // POST: api/Categories

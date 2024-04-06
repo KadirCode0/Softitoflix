@@ -48,13 +48,8 @@ namespace Softitoflix.Controllers
         // PUT: api/Directors/5
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
-        public ActionResult PutDirector(int id, Director director)
+        public ActionResult PutDirector(Director director)
         {
-            if (id != director.Id)
-            {
-                return BadRequest();
-            }
-
             _context.Directors.Update(director);
             _context.SaveChanges();
             return NoContent();

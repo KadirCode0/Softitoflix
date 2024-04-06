@@ -26,6 +26,7 @@ namespace Softitoflix.Controllers
 
         // GET: api/MediaActors
         [HttpGet]
+        [Authorize]
         public ActionResult<List<MediaActor>> GetMediaActors()
         {
             return _context.MediaActors.ToList();
@@ -33,6 +34,7 @@ namespace Softitoflix.Controllers
 
         // GET: api/MediaActors/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<MediaActor> GetMediaActor(int mediaId)
         {
             MediaActor? mediaActor = _context.MediaActors.Where(m => m.MediaId == mediaId).FirstOrDefault();

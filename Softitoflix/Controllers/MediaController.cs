@@ -74,18 +74,18 @@ namespace SoftITOFlix.Controllers
         // DELETE: api/Media/5
         [HttpDelete("{id}")]
         [Authorize(Roles = "ContentAdmin")]
-        public string DeleteMedia(int id)
+        public ActionResult DeleteMedia(int id)
         {
             Media? media = _context.Medias.Find(id);
             if (media == null)
             {
-                return "Null";
+                return NotFound();
             }
 
             media.isPassive = false;
             _context.SaveChanges();
 
-            return "Deleted";
+            return Ok();
         }
     }
 }

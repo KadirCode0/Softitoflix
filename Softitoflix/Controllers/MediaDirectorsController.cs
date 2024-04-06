@@ -25,6 +25,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/MediaDirectors
         [HttpGet]
+        [Authorize]
         public ActionResult<List<MediaDirector>> GetMediaDirectors()
         {
             return _context.MediaDirectors.AsNoTracking().ToList();
@@ -32,6 +33,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/MediaDirectors/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<MediaDirector> GetMediaDirector(int mediaId)
         {
 

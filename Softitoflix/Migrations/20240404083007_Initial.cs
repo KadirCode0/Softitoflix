@@ -124,7 +124,7 @@ namespace Softitoflix.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "Restriction",
+                name: "Restrictions",
                 columns: table => new
                 {
                     Id = table.Column<byte>(type: "tinyint", nullable: false),
@@ -132,7 +132,7 @@ namespace Softitoflix.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Restriction", x => x.Id);
+                    table.PrimaryKey("PK_Restrictions", x => x.Id);
                 });
 
             migrationBuilder.CreateTable(
@@ -181,8 +181,8 @@ namespace Softitoflix.Migrations
                 name: "AspNetUserLogins",
                 columns: table => new
                 {
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    ProviderKey = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    ProviderKey = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     ProviderDisplayName = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserId = table.Column<long>(type: "bigint", nullable: false)
                 },
@@ -226,8 +226,8 @@ namespace Softitoflix.Migrations
                 columns: table => new
                 {
                     UserId = table.Column<long>(type: "bigint", nullable: false),
-                    LoginProvider = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(128)", maxLength: 128, nullable: false),
+                    LoginProvider = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Value = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
@@ -409,9 +409,9 @@ namespace Softitoflix.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_MediaRestrictions_Restriction_RestrictionId",
+                        name: "FK_MediaRestrictions_Restrictions_RestrictionId",
                         column: x => x.RestrictionId,
-                        principalTable: "Restriction",
+                        principalTable: "Restrictions",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                 });
@@ -480,9 +480,10 @@ namespace Softitoflix.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Episodes_MediaId",
+                name: "IX_Episodes_MediaId_SeasonNumber_EpisodeNumber",
                 table: "Episodes",
-                column: "MediaId");
+                columns: new[] { "MediaId", "SeasonNumber", "EpisodeNumber" },
+                unique: true);
 
             migrationBuilder.CreateIndex(
                 name: "IX_MediaActors_ActorId",
@@ -576,7 +577,7 @@ namespace Softitoflix.Migrations
                 name: "Directors");
 
             migrationBuilder.DropTable(
-                name: "Restriction");
+                name: "Restrictions");
 
             migrationBuilder.DropTable(
                 name: "Plans");

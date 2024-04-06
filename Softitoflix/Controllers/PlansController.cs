@@ -47,13 +47,8 @@ namespace Softitoflix.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPut("{id}")]
         [Authorize(Roles = "ContentAdmin")]
-        public ActionResult PutPlan(short id, Plan plan)
+        public ActionResult PutPlan(Plan plan)
         {
-            if (id != plan.Id)
-            {
-                return BadRequest();
-            }
-            
             _context.Plans.Update(plan);
             _context.SaveChanges();
             return NoContent();

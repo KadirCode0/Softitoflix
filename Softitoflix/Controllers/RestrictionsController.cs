@@ -60,7 +60,7 @@ namespace Softitoflix.Controllers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
         [Authorize(Roles = "ContentAdmin")]
-        public int PostRestriction(Restriction restriction)
+        public byte PostRestriction(Restriction restriction)
         {
             _context.Restrictions.Add(restriction);
             _context.SaveChanges();

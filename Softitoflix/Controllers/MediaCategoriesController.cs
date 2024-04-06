@@ -26,6 +26,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/MediaCategories
         [HttpGet]
+        [Authorize]
         public ActionResult<List<MediaCategory>> GetMediaCategories()
         {
 
@@ -34,6 +35,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/MediaCategories/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<MediaCategory> GetMediaCategory(int mediaId)
         {
             MediaCategory? mediaCategory = _context.MediaCategories.Where(m => m.MediaId == mediaId).FirstOrDefault();
@@ -58,7 +60,6 @@ namespace SoftITOFlix.Controllers
             mediaCategory.CategoryId = categoryId;
             _context.MediaCategories.Add(mediaCategory);
             _context.SaveChanges();
-
             return true;
 
         }
@@ -77,7 +78,7 @@ namespace SoftITOFlix.Controllers
             _context.MediaCategories.Remove(mediaCategory);
             _context.SaveChanges();
 
-            return Content("Deleted");
+            return Ok();
         }
     }
 }

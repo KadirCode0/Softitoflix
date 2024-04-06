@@ -12,8 +12,8 @@ using Softitoflix.Data;
 namespace Softitoflix.Migrations
 {
     [DbContext(typeof(SoftitoflixContext))]
-    [Migration("20240328121046_EpisodeUnique")]
-    partial class EpisodeUnique
+    [Migration("20240404083007_Initial")]
+    partial class Initial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -75,12 +75,10 @@ namespace Softitoflix.Migrations
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<long>", b =>
                 {
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderKey")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("ProviderDisplayName")
                         .HasColumnType("nvarchar(max)");
@@ -116,12 +114,10 @@ namespace Softitoflix.Migrations
                         .HasColumnType("bigint");
 
                     b.Property<string>("LoginProvider")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Name")
-                        .HasMaxLength(128)
-                        .HasColumnType("nvarchar(128)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.Property<string>("Value")
                         .HasColumnType("nvarchar(max)");
@@ -357,7 +353,7 @@ namespace Softitoflix.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Restriction");
+                    b.ToTable("Restrictions");
                 });
 
             modelBuilder.Entity("Softitoflix.Models.SoftitoflixRole", b =>

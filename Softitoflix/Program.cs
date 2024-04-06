@@ -17,8 +17,8 @@ public class Program
         builder.Services.AddDbContext<SoftitoflixContext>(options =>
                 options.UseSqlServer(builder.Configuration.GetConnectionString("SoftitoflixContext") ?? throw new InvalidOperationException("Connection string 'SoftitoflixContext' not found.")));
 
-        builder.Services.AddDefaultIdentity<SoftitoflixUser>(options => options.SignIn.RequireConfirmedAccount = true)
-            .AddEntityFrameworkStores<SoftitoflixContext>();
+        builder.Services.AddIdentity<SoftitoflixUser, SoftitoflixRole>()
+            .AddEntityFrameworkStores<SoftitoflixContext>().AddDefaultTokenProviders();
 
 
         // Add services to the container.
@@ -67,7 +67,7 @@ public class Program
                 {
                     softitoflixUser = new SoftitoflixUser();
                     softitoflixUser.UserName = "Admin";
-                    softitoflixUser.Name = "SoftitoFlixAdmin";
+                    softitoflixUser.Name = "Admin";
                     softitoflixUser.Email = "admin@softitoflix.com";
                     softitoflixUser.PhoneNumber = "1234567890";
                     softitoflixUser.BirthDate = DateTime.Today;

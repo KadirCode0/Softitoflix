@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -27,6 +28,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/UserPlans
         [HttpGet]
+        [Authorize]
         public ActionResult<List<UserPlan>> GetUserPlans()
         {
             return _context.UserPlans.ToList();
@@ -34,6 +36,7 @@ namespace SoftITOFlix.Controllers
 
         // GET: api/UserPlans/5
         [HttpGet("{id}")]
+        [Authorize]
         public ActionResult<UserPlan> GetUserPlan(long id)
         {
             var userPlan = _context.UserPlans.Find(id);
@@ -75,12 +78,16 @@ namespace SoftITOFlix.Controllers
         [HttpPost]
         public void PostUserPlan(string email, short planId)
         {
-            UserPlan userPlan = new UserPlan();
+            Plan? plan = _context.Plans.Find(planId);
             SoftitoflixUser? softitoflixUser = _userManager.Users.Where(u => u.Email == email).FirstOrDefault();
             if (softitoflixUser != null)
             {
+                UserPlan userPlan = new UserPlan(); 
                 userPlan.UserId = softitoflixUser.Id;
                 userPlan.PlanId = planId;
+                userPlan.StartDate = DateTime.Today;
+                userPlan.EndDate = userPlan.StartDate.AddMonths(1);
+                softitoflixUser.isPassive = false;
                 _context.UserPlans.Add(userPlan);
                 _context.SaveChanges();
             }

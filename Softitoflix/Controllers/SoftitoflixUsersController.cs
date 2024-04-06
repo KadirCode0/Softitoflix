@@ -86,7 +86,7 @@ namespace Softitoflix.Controllers
                 return NotFound();
             }
 
-            user.PhoneNumber = softitoflixUser.PhoneNumber;
+            user.PhoneNumber = softitoflixUser.PhoneNumber; 
             user.UserName = softitoflixUser.UserName;
             user.BirthDate = softitoflixUser.BirthDate;
             user.Email = softitoflixUser.Email;
@@ -99,13 +99,13 @@ namespace Softitoflix.Controllers
         // POST: api/SoftitoflixUsers
         // To protect from overposting attacks, see https://go.microsoft.com/fwlink/?linkid=2123754
         [HttpPost]
-        public ActionResult<string> PostSoftitoflixUser(SoftitoflixUser softitoflixUser, string password)
+        public ActionResult<string> PostSoftitoflixUser(SoftitoflixUser softitoflixUser)
         {
             if(User.Identity!.IsAuthenticated)
             {
                 return BadRequest();
-            }
-            IdentityResult identityResult = _signInManager.UserManager.CreateAsync(softitoflixUser, password).Result;
+            } 
+            IdentityResult identityResult = _signInManager.UserManager.CreateAsync(softitoflixUser, softitoflixUser.Password).Result;
             if (identityResult != IdentityResult.Success)
             {
                 return identityResult.Errors.FirstOrDefault()!.Description;
@@ -145,7 +145,7 @@ namespace Softitoflix.Controllers
             List<Media> medias = new List<Media>();
             IQueryable<Media> mediaQuery;
             IQueryable<int> userWatches;
-            IGrouping<short, MediaCategory> mediaCategories;
+            IGrouping<short, MediaCategory>? mediaCategories;
 
 
             if (softitoflixUser == null)
@@ -153,35 +153,45 @@ namespace Softitoflix.Controllers
                 return NotFound();
             }
 
-            if(_context.UserPlans.Where(u => u.UserId == softitoflixUser.Id && u.EndDate == DateTime.Today).Any() == false)
+            signInResult = _signInManager.PasswordSignInAsync(softitoflixUser, loginModel.password, false, false).Result;
+
+            if(User.IsInRole("Admin") == false)
             {
-                softitoflixUser.isPassive = true;
-                _signInManager.UserManager.UpdateAsync(softitoflixUser).Wait();
+                if(User.IsInRole("ContentAdmin"))
+                {
+                    if (_context.UserPlans.Where(u => u.UserId == softitoflixUser.Id && u.EndDate == DateTime.Today).Any() == false)
+                    {
+                        softitoflixUser.isPassive = true;
+                        _signInManager.UserManager.UpdateAsync(softitoflixUser).Wait();
+                    }
+                }
             }
+
+   
 
             if (softitoflixUser.isPassive == true)
             {
                 return Content("Passive");
             }
 
-            signInResult = _signInManager.PasswordSignInAsync(softitoflixUser, loginModel.password, false, false).Result;
+
             if(signInResult.Succeeded == true)
             {
                 mediaCategories = _context.UserFavorites.Where(u => u.UserId == softitoflixUser.Id).
-                    Include(u => u.Media).
-                    ThenInclude(u => u.MediaCategories).
+                    Include(u => u.Media!).
+                    Include(u => u.Media!.MediaCategories).
                     ToList().
                     SelectMany(u => u.Media!.MediaCategories!).
                     GroupBy(m => m.CategoryId).
                     OrderByDescending(m => m.Count()).
-                    FirstOrDefault()!;
+                    FirstOrDefault();
                 if(mediaCategories != null)
                 {
                     userWatches = _context.UserWatcheds.Where(u => u.UserId == softitoflixUser.Id).Include(u => u.Episode).Select(u => u.Episode!.MediaId).Distinct();
-                    mediaQuery = _context.Medias.Include(m => m.MediaCategories.Where(mc => mc.CategoryId == mediaCategories.Key)).Where(m => userWatches.Contains(m.Id));
+                    mediaQuery = _context.Medias.Include(m => m.MediaCategories).Where(mc => mc.MediaCategories!.Any(mc => mc.CategoryId == mediaCategories.Key) && userWatches.Contains(mc.Id));
                     if(softitoflixUser.Restriction != null) 
                     {
-                        mediaQuery = mediaQuery.Include(m => m.MediaRestrictions.Where(r => r.RestrictionId != softitoflixUser.Restriction));
+                        mediaQuery = mediaQuery.Include(m => m.MediaRestrictions).Where(m => m.MediaRestrictions!.Any(r => r.RestrictionId == softitoflixUser.Restriction));
                     }
                     medias = mediaQuery.ToList();
                 }
@@ -189,10 +199,38 @@ namespace Softitoflix.Controllers
             return medias;
         }
 
+
+        [HttpPost("AssignRole")]
+        [Authorize(Roles = "Admin")]
+        public ActionResult AssignRole(string email)
+        {
+            SoftitoflixUser? softitoflixUser = _signInManager.UserManager.Users.Where(u =>u.Email == email).FirstOrDefault();
+            if (softitoflixUser == null)
+            {
+                return NotFound();
+            }
+            _signInManager.UserManager.AddToRoleAsync(softitoflixUser, "ContentAdmin").Wait();
+            return Ok();
+        }
+
+        [HttpPost("RemoveRole")]
+        [Authorize(Roles = "Admin")]
+        public ActionResult DeleteRole(string email) 
+        {
+            SoftitoflixUser? softitoflixUser = _signInManager.UserManager.Users.Where(u => u.Email == email).FirstOrDefault();
+            if (softitoflixUser == null)
+            {
+                return NotFound();
+            }
+            _signInManager.UserManager.RemoveFromRoleAsync(softitoflixUser, "ContentAdmin").Wait();
+            return Ok();
+        }
+
+
         [HttpPost("Logout")]
         public void Logout()
         {
-
+            _signInManager.SignOutAsync().Wait();
         }
 
     }
